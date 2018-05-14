@@ -15,6 +15,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.nineoldandroids.animation.ObjectAnimator
 import kotlinx.android.synthetic.main.activity_list.*
 import org.rhona.piclibrary.model.FileData
+import org.rhona.piclibrary.tools.AppTools
 import org.rhona.wallper.adapter.BaseQuickAdapter
 import org.rhona.wallper.adapter.ViewHolder
 import java.io.File
@@ -50,25 +51,30 @@ class PictureListActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
         heardAdapter = object : BaseQuickAdapter<FileData, ViewHolder>(this, R.layout.item_heard_details, heardList) {
             override fun convert(holder: ViewHolder?, item: FileData?) {
-
-
+                Glide.with(this@PictureListActivity)
+                        .asBitmap()
+                        .load(item?.firstPath)
+                        .apply(RequestOptions().centerCrop().override(180))
+                        .into(holder?.getImageView(R.id.iv_img))
+                holder?.getTextView(R.id.tv_Title)?.setText(item?.parentName)
+                holder?.getTextView(R.id.tv_Count)?.setText(item?.count.toString())
             }
         }
+        
         heardRecycler.layoutManager = LinearLayoutManager(this)
         heardRecycler.adapter = heardAdapter
+        ObjectAnimator.ofFloat(heardRecycler, "translationY", -AppTools.getWindowsHeight(this).toFloat()).setDuration(0).start()
         getHeard()
         bindEvent()
     }
 
     fun bindEvent() {
         tv_Title.setOnClickListener(View.OnClickListener {
-            if (heardRecycler.visibility == View.VISIBLE) {
-//                ObjectAnimator.ofFloat(heardRecycler,"translationY",heardRecycler.height).
-                heardRecycler.visibility = View.GONE
+            if (heardRecycler.y == 0f) {
+                ObjectAnimator.ofFloat(heardRecycler, "translationY", -AppTools.getWindowsHeight(this).toFloat()).setDuration(320).start()
             } else {
-                heardRecycler.visibility = View.VISIBLE
+                ObjectAnimator.ofFloat(heardRecycler, "translationY", 0f).setDuration(320).start()
             }
-
         })
     }
 

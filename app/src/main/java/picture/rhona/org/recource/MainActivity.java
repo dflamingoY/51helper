@@ -31,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openPiture(View view) {
-        startActivity(new Intent(this, PictureListActivity.class).putExtra("column", 4).putExtra("count", 9));
+        startActivity(new Intent(this, PictureListActivity.class)
+                .putExtra("column", 4)
+                .putExtra("count", 9));
     }
 
 

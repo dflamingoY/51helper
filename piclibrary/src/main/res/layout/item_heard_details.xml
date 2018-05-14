@@ -13,6 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
+        card_view:cardBackgroundColor="#fff"
         card_view:cardCornerRadius="2dp"
         card_view:cardElevation="0dp">
 
@@ -42,7 +43,6 @@
             android:layout_height="wrap_content"
             android:gravity="left"
             android:singleLine="true"
-            android:text="dasdad"
             android:textSize="17sp" />
 
         <TextView
@@ -51,7 +51,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:gravity="left"
-            android:text="dasdad "
             android:textSize="14sp" />
     </LinearLayout>
 
