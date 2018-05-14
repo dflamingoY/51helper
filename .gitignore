@@ -9,4 +9,5 @@
 .externalNativeBuild
 app/build/
 /gradle
+.idea
 
