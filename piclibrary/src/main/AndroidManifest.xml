@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.rhona.piclibrary">
+
+    <application>
+        <activity android:name=".PictureListActivity" />
+        <activity android:name=".PreActivity" />
+    </application>
+
+</manifest>

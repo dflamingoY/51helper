@@ -1,0 +1,42 @@
+<resources>>
+
+    <style name="SelfStyle" parent="android:Theme.Material">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- 状态栏颜色，会被statusBarColor效果覆盖-->
+        <item name="android:colorPrimaryDark">@color/colorAccent</item>
+        <!-- 状态栏颜色，继承自colorPrimaryDark -->
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <!-- actionBar颜色 -->
+        <item name="android:colorPrimary">@color/colorPrimaryDark</item>
+        <!-- 背景颜色 -->
+        <item name="android:windowBackground">@color/colorWhite</item>
+        <!-- 底部栏颜色 -->
+        <item name="android:navigationBarColor">@color/colorText</item>
+
+        <!-- ListView的分割线颜色，switch滑动区域色-->
+        <item name="android:colorForeground">@color/colorDivide</item>
+        <!-- popMenu的背景色 -->
+        <item name="android:colorBackground">@color/colorStatueBar</item>
+
+        <!-- 控件默认颜色 ，效果会被colorControlActivated取代  -->
+        <item name="android:colorAccent"></item>
+
+        <!-- 控件默认时颜色  -->
+        <item name="android:colorControlNormal">@color/colorAccent</item>
+        <!-- 控件按压时颜色，会影响水波纹效果，继承自colorAccent  -->
+        <item name="android:colorControlHighlight">@color/colorStatueBar</item>
+        <!-- 控件选中时颜色 -->
+        <item name="android:colorControlActivated">@color/colorStatueBar</item>
+        <!-- Button的默认背景 -->
+        <item name="android:colorButtonNormal">@color/colorStatueBar</item>
+
+        <!-- Button，textView的文字颜色  -->
+        <item name="android:textColor">@color/colorSecondText</item>
+        <!-- RadioButton checkbox等控件的文字 -->
+        <item name="android:textColorPrimaryDisableOnly">@color/colorWhite</item>
+        <!-- actionBar的标题文字颜色 -->
+        <item name="android:textColorPrimary">@color/colorWhite</item>
+
+    </style>
+</resources>
