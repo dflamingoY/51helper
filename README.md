@@ -6,9 +6,9 @@
   
 .putExtra("column", 4) 展示的行数  
 .putExtra("count", 9)选择的数量  
-.putExtra("fileName", Environment.getExternalStorageDirectory().getAbsolutePath()) 相册保存的路径
+.putExtra("fileName", Environment.getExternalStorageDirectory().getAbsolutePath()) 相机保存的路径
 
-应用内已经适配android7.0调用相册的适配问题
+应用内已经适配android7.0调用相机的适配问题
 		  
 	if (targetFile != null) {
             File file = new File(targetFile.getParent());
