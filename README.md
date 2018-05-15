@@ -4,6 +4,31 @@
 支持单选多选 
 
   
-.putExtra("column", 4) 展示的行数
+.putExtra("column", 4) 展示的行数  
+.putExtra("count", 9)选择的数量  
+.putExtra("fileName", Environment.getExternalStorageDirectory().getAbsolutePath()) 相册保存的路径
+
+应用内已经适配android7.0调用相册的适配问题
+		  
+	if (targetFile != null) {
+            File file = new File(targetFile.getParent());
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+        }
+        Uri uri = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            uri = FileProvider.getUriForFile(
+                    activity,
+                    activity.getPackageName() + ".fileprovider",
+                    targetFile);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } else {
+            uri = Uri.fromFile(targetFile);
+        }
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        activity.startActivityForResult(intent, code);
   
-.putExtra("count", 9)选择的数量
+显示 https://im3.ezgif.com/tmp/ezgif-3-8d0b5a79ac.gif
+  
+

@@ -14,11 +14,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
@@ -193,6 +195,12 @@ public class AppTools {
         }
     }
 
+    /**
+     * 打开相册
+     *
+     * @param context
+     * @param request
+     */
     public static void openGallery(Activity context, int request) {
         Intent intent;
         if (Build.VERSION.SDK_INT < 19) {
@@ -202,6 +210,38 @@ public class AppTools {
             intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         }
         context.startActivityForResult(intent, request);
+    }
+
+    /**
+     *
+     * @param activity
+     * @param code
+     * @param targetFile  图片绝对路径
+     * @throws Exception
+     */
+    public static void openCamera(Activity activity, int code, File targetFile) throws Exception {
+        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        // 判断存储卡是否可以用，可用进行存储
+        if (AppTools.hasSdcard()) {
+            if (targetFile != null) {
+                File file = new File(targetFile.getParent());
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+            }
+            Uri uri = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                uri = FileProvider.getUriForFile(
+                        activity,
+                        activity.getPackageName() + ".fileprovider",
+                        targetFile);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } else {
+                uri = Uri.fromFile(targetFile);
+            }
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            activity.startActivityForResult(intent, code);
+        }
     }
 
     /**

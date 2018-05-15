@@ -7,10 +7,10 @@ import android.os.Parcelable
  * Created by yzm on 2018/5/14.
  */
 class FileData() : Parcelable {
-    var count = 0
-    var parentName: String? = null
-    var path: String? = null
-    var firstPath: String? = null
+    var count = 0 //
+    var parentName: String? = null  //文件名
+    var path: String? = null//文件路径
+    var firstPath: String? = null //显示的头图
 
     constructor(parcel: Parcel) : this() {
         count = parcel.readInt()

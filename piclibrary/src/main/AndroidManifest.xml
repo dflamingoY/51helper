@@ -4,6 +4,8 @@
     <application>
         <activity android:name=".PictureListActivity" />
         <activity android:name=".PreActivity" />
+
+
     </application>
 
 </manifest>

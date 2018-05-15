@@ -1,5 +1,8 @@
 package org.rhona.piclibrary
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.provider.MediaStore
@@ -10,12 +13,14 @@ import android.support.v7.widget.RecyclerView
 import android.view.KeyEvent
 import android.view.View
 import android.view.Window
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.nineoldandroids.animation.ObjectAnimator
 import kotlinx.android.synthetic.main.activity_list.*
 import org.rhona.piclibrary.model.FileData
 import org.rhona.piclibrary.tools.AppTools
+import org.rhona.piclibrary.wedgits.CustomCheckImageView
 import org.rhona.wallper.adapter.BaseQuickAdapter
 import org.rhona.wallper.adapter.ViewHolder
 import java.io.File
@@ -25,12 +30,18 @@ import java.io.FilenameFilter
  * Created by yzm on 2018/5/14.
  */
 class PictureListActivity : AppCompatActivity() {
+    val REQUEST_PRECODE = 0x0001
+    val REQUEXT_CAMERA = 0x0002
     var maxCount = 9
     var column = 4
     var adapter: BaseQuickAdapter<String, ViewHolder>? = null
     var data = ArrayList<String>()
-    var heardList = ArrayList<FileData>()
-    var heardAdapter: BaseQuickAdapter<FileData, ViewHolder>? = null
+    var heardList = ArrayList<FileData>()//文件夹是数据
+    var heardAdapter: BaseQuickAdapter<FileData, ViewHolder>? = null//显示所有文件夹
+    var current = 0
+    var selectedList = ArrayList<String>()
+    var extraFile: String? = null  //拍照图片的保存路径
+    var file: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -38,13 +49,38 @@ class PictureListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_list)
         column = intent.getIntExtra("column", 4)
         maxCount = intent.getIntExtra("count", 9)
+        extraFile = intent.getStringExtra("fileName")
         adapter = object : BaseQuickAdapter<String, ViewHolder>(this, R.layout.item_details, data) {
             override fun convert(holder: ViewHolder?, item: String?) {
-                Glide.with(this@PictureListActivity)
-                        .asBitmap()
-                        .load(item)
-                        .apply(RequestOptions().centerCrop().override(180))
-                        .into(holder?.getImageView(R.id.img))
+                if ("相机".equals(item)) {
+                    holder?.getImageView(R.id.img)?.setImageResource(R.mipmap.btn_take_photo)
+                    holder?.getView(R.id.check_img)?.visibility = View.GONE
+                } else {
+                    holder?.getView(R.id.check_img)?.visibility = View.VISIBLE
+                    Glide.with(this@PictureListActivity)
+                            .asBitmap()
+                            .load(item)
+                            .apply(RequestOptions().centerCrop().override(180))
+                            .into(holder?.getImageView(R.id.img))
+                    item?.let { holder?.getView(R.id.iv_Gif)?.visibility = if (it.endsWith(".gif")) View.VISIBLE else View.GONE }
+                    val view = holder?.getView(R.id.check_img) as CustomCheckImageView
+                    view.isSelected = selectedList.contains(item)
+                    view.setOnStateChangeListener { selected ->
+                        if (selected)
+                            if (selectedList.size == maxCount) {
+                                Toast.makeText(this@PictureListActivity, "最多选择" + maxCount + "张照片", Toast.LENGTH_SHORT).show()
+                                view.isSelected = false
+                                return@setOnStateChangeListener
+                            }
+                        if (selectedList.contains(item)) {
+                            item?.let { selectedList.remove(it) }
+                        } else {
+                            item?.let { selectedList.add(it) }
+                        }
+                        tv_Count.setText(selectedList.size.toString())
+                        tv_Count.visibility = if (selectedList.size == 0) View.GONE else View.VISIBLE
+                    }
+                }
             }
         }
         recyclerView.layoutManager = GridLayoutManager(this, 4) as RecyclerView.LayoutManager?
@@ -60,7 +96,7 @@ class PictureListActivity : AppCompatActivity() {
                 holder?.getTextView(R.id.tv_Count)?.setText(item?.count.toString())
             }
         }
-        
+
         heardRecycler.layoutManager = LinearLayoutManager(this)
         heardRecycler.adapter = heardAdapter
         ObjectAnimator.ofFloat(heardRecycler, "translationY", -AppTools.getWindowsHeight(this).toFloat()).setDuration(0).start()
@@ -76,6 +112,58 @@ class PictureListActivity : AppCompatActivity() {
                 ObjectAnimator.ofFloat(heardRecycler, "translationY", 0f).setDuration(320).start()
             }
         })
+        adapter?.setOnItemClikListener(object : BaseQuickAdapter.OnItemClickListener {
+            override fun onItemClick(view: View, position: Int) {
+                /**
+                 * 数据太大导致数据传递失败  solution
+                 * 1.数据存储在本地  调取本地数据
+                 * 2.数据共享 写静态数组
+                 * 3.压缩数据
+                 * 4.直接给文件夹路径
+                 */
+                if ("相机".equals(data?.get(position))) {
+                    /**
+                     * 打开相机
+                     */
+                    file = File(extraFile + "/" + System.currentTimeMillis() + ".png")
+                    AppTools.openCamera(this@PictureListActivity, REQUEXT_CAMERA, file)
+                } else
+                    startActivityForResult(Intent(this@PictureListActivity, PreActivity::class.java)
+                            .putExtra("selected", selectedList)
+                            .putExtra("current", if (current == 0) position - 1 else position)
+                            .putExtra("parentPath", heardList.get(current).path)
+                            .putExtra("allow", maxCount)
+                            , REQUEST_PRECODE)
+            }
+        })
+        heardAdapter?.setOnItemClikListener(object : BaseQuickAdapter.OnItemClickListener {
+            override fun onItemClick(view: View, position: Int) {
+                data.clear()
+                if (position == 0) {
+                    getHeard()
+                } else {
+                    getPicList(heardList.get(position).path!!)
+                }
+                ObjectAnimator.ofFloat(heardRecycler, "translationY", -AppTools.getWindowsHeight(this@PictureListActivity).toFloat()).setDuration(320).start()
+                current = position
+            }
+        })
+        tv_Pre.setOnClickListener(View.OnClickListener() {
+            /**
+             * 预览图片
+             */
+            if (selectedList.size > 0)
+                startActivityForResult(Intent(this@PictureListActivity, PreActivity::class.java)
+                        .putExtra("selected", selectedList)
+                        .putExtra("allow", maxCount)
+                        , REQUEST_PRECODE)
+        })
+        tv_Commit.setOnClickListener({
+            if (selectedList.size > 0) {
+                setResult(Activity.RESULT_OK, Intent().putExtra("result", selectedList))
+                finish()
+            }
+        })
     }
 
     /*
@@ -83,7 +171,7 @@ class PictureListActivity : AppCompatActivity() {
      */
     @Synchronized
     fun getHeard() {
-
+        heardList.clear()
         object : AsyncTask<Void, Void, List<String>>() {
             override fun doInBackground(vararg p0: Void?): List<String>? {
                 val data = ArrayList<String>()
@@ -122,7 +210,6 @@ class PictureListActivity : AppCompatActivity() {
                             e.printStackTrace()
                             continue
                         }
-
                         backResult!!.count = picSize
                         firstPath = null
                         this@PictureListActivity.heardList.add(backResult)
@@ -140,22 +227,40 @@ class PictureListActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-
                 filePath.count = result!!.size
                 filePath.parentName = "全部图片"
                 heardList.add(0, filePath)
                 heardAdapter?.notifyDataSetChanged()
+                data.add("相机")
                 data.addAll(result!!)
                 adapter?.notifyDataSetChanged()
             }
-
         }.execute()
-
     }
 
     @Synchronized
-    fun getPicList() {
-//        AsyncTask<Void, Void, >
+    fun getPicList(path: String) {
+        object : AsyncTask<Void, Void, Array<String>>() {
+            override fun doInBackground(vararg p0: Void?): Array<String>? {
+                val file = File(path)
+                if (!file.exists() || !file.isDirectory) {
+                    return null
+                }
+                val fileter = FilenameFilter { file, s -> s.endsWith(".gif") || s.endsWith("jpeg") || s.endsWith(".png") || s.endsWith(".jpg") }
+                val list = file.list(fileter)
+                return list
+            }
+
+            override fun onPostExecute(result: Array<String>?) {
+                super.onPostExecute(result)
+                if (result == null)
+                    return
+                for (suffix in result!!) {
+                    data.add(path + "/" + suffix)
+                }
+                adapter?.notifyDataSetChanged()
+            }
+        }.execute()
 
     }
 
@@ -166,5 +271,34 @@ class PictureListActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == REQUEST_PRECODE) {
+                data?.let {
+                    val resultData = data.getSerializableExtra("select") as ArrayList<String>
+                    setResult(Activity.RESULT_OK, Intent().putExtra("result", resultData))
+                    finish()
+                }
+            } else if (requestCode == REQUEXT_CAMERA) {
+                this.data.add(1, file?.absolutePath!!)
+                adapter?.notifyDataSetChanged()
+                val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                val contentUri = Uri.fromFile(file)
+                mediaScanIntent.data = contentUri
+                sendBroadcast(mediaScanIntent)
+            }
+        } else if (resultCode == Activity.RESULT_CANCELED) {
+            if (requestCode == REQUEST_PRECODE) {
+                data?.let {
+                    selectedList = data.getSerializableExtra("select") as ArrayList<String>
+                    adapter?.notifyDataSetChanged()
+                    tv_Count.setText(selectedList.size.toString())
+                    tv_Count.visibility = if (selectedList.size == 0) View.GONE else View.VISIBLE
+                }
+            }
+        }
+
+    }
 
 }
