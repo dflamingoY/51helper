@@ -29,6 +29,7 @@
         intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         activity.startActivityForResult(intent, code);
   
-显示 https://im3.ezgif.com/tmp/ezgif-3-8d0b5a79ac.gif
+显示 https://github.com/593361260/51helper/blob/master/show.gif  
+
   
 
