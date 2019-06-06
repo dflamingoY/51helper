@@ -1,5 +1,6 @@
 package org.rhona.piclibrary
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
@@ -17,6 +18,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.nineoldandroids.animation.ObjectAnimator
 import kotlinx.android.synthetic.main.activity_pre.*
+import org.rhona.piclibrary.tools.AppTools
 import org.rhona.piclibrary.wedgits.ivView.PhotoView
 import java.io.File
 import java.io.FilenameFilter
@@ -25,13 +27,13 @@ import java.io.FilenameFilter
  * Created by yzm on 2018/5/14.
  */
 class PreActivity : AppCompatActivity() {
-    var data = ArrayList<String>()//all'数据
-    var selectedList = ArrayList<String>()//选中的list
-    var currentPage = 0 //当前角标
-    var full = false //是否全屏
-    var maxCount = 9//最大允许选择数量
+    private var data = ArrayList<String>()//all'数据
+    private var selectedList = ArrayList<String>()//选中的list
+    private var currentPage = 0 //当前角标
+    private var full = false //是否全屏
+    private var maxCount = 9//最大允许选择数量
 
-
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
@@ -45,6 +47,9 @@ class PreActivity : AppCompatActivity() {
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         }
         setContentView(R.layout.activity_pre)
+        val params = status_bar.layoutParams
+        params.height = AppTools.getStatusBarHeight(this)
+        status_bar.layoutParams = params
         val serializableExtra = intent.getSerializableExtra("selected") as ArrayList<String>
         currentPage = intent.getIntExtra("current", -1)
         val parentPath = intent.getStringExtra("parentPath")
@@ -53,7 +58,7 @@ class PreActivity : AppCompatActivity() {
         if (currentPage == -1) {//  表示是从预览点击进来的
             data.addAll(serializableExtra)
             viewPager.adapter = ImgAdapter()
-            tv_Index.setText("1/" + data.size)
+            tv_Index.text = "1/" + data.size
             check_img.isSelected = true
 
         } else {//要去取数据
@@ -61,7 +66,7 @@ class PreActivity : AppCompatActivity() {
         }
         if (selectedList.size > 0) {
             tv_Count.visibility = View.VISIBLE
-            tv_Count.setText(selectedList.size.toString())
+            tv_Count.text = selectedList.size.toString()
         }
         bindEvent()
     }
@@ -76,8 +81,8 @@ class PreActivity : AppCompatActivity() {
             }
 
             override fun onPageSelected(position: Int) {
-                check_img.isSelected = selectedList.contains(data.get(position))
-                tv_Index.setText((position + 1).toString() + "/" + data.size)
+                check_img.isSelected = selectedList.contains(data[position])
+                tv_Index.text = "${(position + 1)}/${data.size}"
             }
         })
         check_img.setOnStateChangeListener {
@@ -88,38 +93,39 @@ class PreActivity : AppCompatActivity() {
                     return@setOnStateChangeListener
                 }
             }
-            if (selectedList.contains(data.get(viewPager.currentItem))) {
-                selectedList.remove(data.get(viewPager.currentItem))
+            if (selectedList.contains(data[viewPager.currentItem])) {
+                selectedList.remove(data[viewPager.currentItem])
             } else {
                 selectedList.add(data[(viewPager.currentItem)])
             }
-            tv_Count.setText(selectedList.size.toString())
+            tv_Count.text = selectedList.size.toString()
 
             if (selectedList.size > 0) {
                 tv_Count.visibility = View.VISIBLE
-                tv_Count.setText(selectedList.size.toString())
+                tv_Count.text = selectedList.size.toString()
             } else {
                 tv_Count.visibility = View.GONE
             }
         }
-        tv_Commit.setOnClickListener({
+        tv_Commit.setOnClickListener {
             if (selectedList.size > 0) {
                 setResult(RESULT_OK, Intent().putExtra("select", selectedList))
                 finish()
             }
-        })
+        }
     }
 
-    fun getData(path: String?) {
+    @SuppressLint("StaticFieldLeak")
+    private fun getData(path: String?) {
         object : AsyncTask<Void, Void, List<String>>() {
             override fun doInBackground(vararg p0: Void?): List<String> {
                 val data = ArrayList<String>()
                 if (TextUtils.isEmpty(path)) {
                     val imageUrl = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                    val resolver = this@PreActivity.getContentResolver()
+                    val resolver = this@PreActivity.contentResolver
                     val cursor = resolver.query(imageUrl, null, MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?",
                             arrayOf("image/jpeg", "image/png", "image/gif"), MediaStore.Images.Media.DATE_MODIFIED)
-                    if (null != cursor && cursor!!.getCount() > 0) {
+                    if (null != cursor && cursor!!.count > 0) {
                         while (cursor!!.moveToNext()) {
                             val path = cursor!!.getString(cursor!!
                                     .getColumnIndex(MediaStore.Images.Media.DATA))
@@ -129,12 +135,12 @@ class PreActivity : AppCompatActivity() {
                     cursor!!.close()
                 } else {
                     val file = File(path)
-                    if (file.isDirectory()) {
-                        val filter = FilenameFilter { file, s -> s.endsWith("png") || s.endsWith("jpg") || s.endsWith("jpeg") || s.endsWith("gif") }
+                    if (file.isDirectory) {
+                        val filter = FilenameFilter { _, s -> s.endsWith("png") || s.endsWith("jpg") || s.endsWith("jpeg") || s.endsWith("gif") }
                         val strs = file.list(filter)
                         if (data != null) {
                             for (str in strs) {
-                                data.add(path + "/" + str)
+                                data.add("$path/$str")
                             }
                         }
                     }
@@ -150,7 +156,7 @@ class PreActivity : AppCompatActivity() {
         }.execute()
     }
 
-    inner class ImgAdapter : PagerAdapter() {
+    private inner class ImgAdapter : PagerAdapter() {
 
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             val view = LayoutInflater.from(this@PreActivity).inflate(R.layout.view_photo, null)
@@ -158,12 +164,12 @@ class PreActivity : AppCompatActivity() {
             val params = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             photoView.enable()
             Glide.with(this@PreActivity)
-                    .load("file://" + data.get(position))
+                    .load("file://" + data[position])
                     .apply(RequestOptions().skipMemoryCache(true))
                     .into(photoView)
-            photoView.setOnClickListener({
+            photoView.setOnClickListener {
                 doAnim()
-            })
+            }
             container.addView(view, params)
             return view
         }
@@ -185,14 +191,9 @@ class PreActivity : AppCompatActivity() {
     private fun doAnim() {
         full = !full
         if (full) {//全屏
-            window.decorView.systemUiVisibility = View.INVISIBLE
             ObjectAnimator.ofFloat(toolbar, "translationY", -toolbar.height.toFloat()).setDuration(220).start()
             ObjectAnimator.ofFloat(bottom_Menu, "translationY", bottom_Menu.height.toFloat()).setDuration(220).start()
         } else {
-            window.decorView.systemUiVisibility = View.VISIBLE
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            }
             ObjectAnimator.ofFloat(toolbar, "translationY", 0F).setDuration(220).start()
             ObjectAnimator.ofFloat(bottom_Menu, "translationY", 0F).setDuration(220).start()
         }
