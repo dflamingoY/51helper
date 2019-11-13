@@ -80,6 +80,7 @@ class PreActivity : AppCompatActivity() {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
             }
 
+            @SuppressLint("SetTextI18n")
             override fun onPageSelected(position: Int) {
                 check_img.isSelected = selectedList.contains(data[position])
                 tv_Index.text = "${(position + 1)}/${data.size}"
@@ -118,6 +119,7 @@ class PreActivity : AppCompatActivity() {
     @SuppressLint("StaticFieldLeak")
     private fun getData(path: String?) {
         object : AsyncTask<Void, Void, List<String>>() {
+            @SuppressLint("Recycle")
             override fun doInBackground(vararg p0: Void?): List<String> {
                 val data = ArrayList<String>()
                 if (TextUtils.isEmpty(path)) {
@@ -125,9 +127,9 @@ class PreActivity : AppCompatActivity() {
                     val resolver = this@PreActivity.contentResolver
                     val cursor = resolver.query(imageUrl, null, MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?",
                             arrayOf("image/jpeg", "image/png", "image/gif"), MediaStore.Images.Media.DATE_MODIFIED)
-                    if (null != cursor && cursor!!.count > 0) {
-                        while (cursor!!.moveToNext()) {
-                            val path = cursor!!.getString(cursor!!
+                    if (null != cursor && cursor.count > 0) {
+                        while (cursor.moveToNext()) {
+                            val path = cursor.getString(cursor
                                     .getColumnIndex(MediaStore.Images.Media.DATA))
                             data.add(0, path)
                         }
@@ -138,10 +140,8 @@ class PreActivity : AppCompatActivity() {
                     if (file.isDirectory) {
                         val filter = FilenameFilter { _, s -> s.endsWith("png") || s.endsWith("jpg") || s.endsWith("jpeg") || s.endsWith("gif") }
                         val strs = file.list(filter)
-                        if (data != null) {
-                            for (str in strs) {
-                                data.add("$path/$str")
-                            }
+                        for (str in strs) {
+                            data.add("$path/$str")
                         }
                     }
                 }
@@ -158,6 +158,7 @@ class PreActivity : AppCompatActivity() {
 
     private inner class ImgAdapter : PagerAdapter() {
 
+        @SuppressLint("InflateParams")
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             val view = LayoutInflater.from(this@PreActivity).inflate(R.layout.view_photo, null)
             val photoView = view.findViewById<PhotoView>(R.id.photoView)

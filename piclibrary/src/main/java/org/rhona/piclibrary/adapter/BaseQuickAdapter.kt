@@ -1,4 +1,4 @@
-package org.rhona.wallper.adapter
+package org.rhona.piclibrary.adapter
 
 import android.content.Context
 import android.support.v7.widget.GridLayoutManager
@@ -60,10 +60,10 @@ abstract class BaseQuickAdapter<T, H : ViewHolder> : RecyclerView.Adapter<ViewHo
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         if (viewType == ITEM_TYPE_HEARD)
-            return ViewHolder(heardView)
+            return ViewHolder(heardView!!)
         if (viewType == ITEM_TYPE_FOOT)
-            return ViewHolder(footView)
-        val view = LayoutInflater.from(parent?.getContext()).inflate(layoutResId, parent, false)
+            return ViewHolder(footView!!)
+        val view = LayoutInflater.from(parent.context).inflate(layoutResId, parent, false)
         view.setOnClickListener(this)
         return ViewHolder(view)
     }
@@ -73,24 +73,24 @@ abstract class BaseQuickAdapter<T, H : ViewHolder> : RecyclerView.Adapter<ViewHo
             return
         if (isHadFoot && isFooter(position))
             return
-        holder!!.itemView.setOnLongClickListener(View.OnLongClickListener { v ->
+        holder.itemView.setOnLongClickListener { v ->
             if (longClickListener != null) {
                 longClickListener?.onItemLongClick(v, v.tag as Int)
                 true
             } else {
                 false
             }
-        })
-        holder?.itemView?.setTag(position - hearCount)
+        }
+        holder.itemView.tag = position - hearCount
         val item = getItem(position - hearCount)
-        convert(holder as H, item)
+        convert(holder, item)
     }
 
     private fun getItem(position: Int): T? {
         return if (position >= list!!.size) null else list?.get(position)
     }
 
-    fun isHeard(position: Int): Boolean {
+    private fun isHeard(position: Int): Boolean {
         if (isHadHeard) {
             if (position == 0)
                 return true
@@ -127,7 +127,7 @@ abstract class BaseQuickAdapter<T, H : ViewHolder> : RecyclerView.Adapter<ViewHo
 
     override fun onClick(v: View?) {
         if (itemClickListener != null) {
-            itemClickListener?.onItemClick(v!!, v.getTag() as Int)
+            itemClickListener?.onItemClick(v!!, v.tag as Int)
         }
     }
 
@@ -151,15 +151,13 @@ abstract class BaseQuickAdapter<T, H : ViewHolder> : RecyclerView.Adapter<ViewHo
     }
 
     private fun setFootView(manager: RecyclerView.LayoutManager, footView: View) {
-        if (footView != null) {
-            footCount = 1
-            this.footView = footView
-            isHadFoot = true
-            if (manager is GridLayoutManager) {
-                manager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                    override fun getSpanSize(position: Int): Int {
-                        return if (isFooter(position)) manager.spanCount else 1
-                    }
+        footCount = 1
+        this.footView = footView
+        isHadFoot = true
+        if (manager is GridLayoutManager) {
+            manager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    return if (isFooter(position)) manager.spanCount else 1
                 }
             }
         }
@@ -171,9 +169,9 @@ abstract class BaseQuickAdapter<T, H : ViewHolder> : RecyclerView.Adapter<ViewHo
     fun setLoadmore(recycler: RecyclerView, manager: RecyclerView.LayoutManager, footView: View) {
         setFootView(manager, footView)
         recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                if (mLastVisibleItem + 1 == this@BaseQuickAdapter.getItemCount()) {
+                if (mLastVisibleItem + 1 == this@BaseQuickAdapter.itemCount) {
                     if (mOnLoadListener == null) return
                     if (mLoadState == ELoadState.READY) {
                         mOnLoadListener?.onLoadMore()
@@ -182,7 +180,7 @@ abstract class BaseQuickAdapter<T, H : ViewHolder> : RecyclerView.Adapter<ViewHo
                 }
             }
 
-            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 if (manager is LinearLayoutManager /*|| mLayoutManager instanceof GridLayoutManager*/) {
                     mLastVisibleItem = manager.findLastVisibleItemPosition()
@@ -220,30 +218,30 @@ abstract class BaseQuickAdapter<T, H : ViewHolder> : RecyclerView.Adapter<ViewHo
         val emptyView = footView?.findViewById(R.id.relative_Empty) as View
         when (loadStatue) {
             ELoadState.GONE -> {
-                msg.setText("上拉加载")
-                footView?.setVisibility(View.GONE)
+                msg.text = "上拉加载"
+                footView?.visibility = View.GONE
             }
             ELoadState.LOADING -> {
-                msg.setText("正在加载…")
-                progress.setVisibility(View.VISIBLE)
+                msg.text = "正在加载…"
+                progress.visibility = View.VISIBLE
             }
             ELoadState.READY -> {
-                msg.setText("上拉或点击加载更多")
-                mLinearProgress.setVisibility(View.VISIBLE)
-                emptyView.setVisibility(View.GONE)
-                progress.setVisibility(View.GONE)
-                footView?.setVisibility(View.VISIBLE)
+                msg.text = "上拉或点击加载更多"
+                mLinearProgress.visibility = View.VISIBLE
+                emptyView.visibility = View.GONE
+                progress.visibility = View.GONE
+                footView?.visibility = View.VISIBLE
             }
             ELoadState.EMPTY -> {
-                msg.setText("没有更多数据啦")
-                progress.setVisibility(View.GONE)
-                footView?.setVisibility(View.VISIBLE)
+                msg.text = "没有更多数据啦"
+                progress.visibility = View.GONE
+                footView?.visibility = View.VISIBLE
             }
             ELoadState.NULLDATA -> {
-                mLinearProgress.setVisibility(View.GONE)
-                emptyView.setVisibility(View.VISIBLE)
-                progress.setVisibility(View.GONE)
-                footView?.setVisibility(View.VISIBLE)
+                mLinearProgress.visibility = View.GONE
+                emptyView.visibility = View.VISIBLE
+                progress.visibility = View.GONE
+                footView?.visibility = View.VISIBLE
             }
         }
     }

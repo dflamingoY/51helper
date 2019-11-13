@@ -3,8 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/51helper.iml" filepath="$PROJECT_DIR$/51helper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/51helper-app.iml" filepath="$PROJECT_DIR$/app/51helper-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/piclibrary/51helper-piclibrary.iml" filepath="$PROJECT_DIR$/piclibrary/51helper-piclibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/piclibrary/piclibrary.iml" filepath="$PROJECT_DIR$/piclibrary/piclibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/work-51helper.iml" filepath="$PROJECT_DIR$/work-51helper.iml" />
     </modules>
   </component>
 </project>

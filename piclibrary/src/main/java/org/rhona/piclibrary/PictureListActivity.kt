@@ -10,7 +10,6 @@ import android.provider.MediaStore
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.KeyEvent
 import android.view.View
 import android.view.Window
@@ -22,8 +21,8 @@ import kotlinx.android.synthetic.main.activity_list.*
 import org.rhona.piclibrary.model.FileData
 import org.rhona.piclibrary.tools.AppTools
 import org.rhona.piclibrary.wedgits.CustomCheckImageView
-import org.rhona.wallper.adapter.BaseQuickAdapter
-import org.rhona.wallper.adapter.ViewHolder
+import org.rhona.piclibrary.adapter.BaseQuickAdapter
+import org.rhona.piclibrary.adapter.ViewHolder
 import java.io.File
 import java.io.FilenameFilter
 
@@ -125,7 +124,7 @@ class PictureListActivity : AppCompatActivity() {
                  * 3.压缩数据
                  * 4.直接给文件夹路径
                  */
-                if ("相机" == data?.get(position)) {
+                if ("相机" == data[position]) {
                     /**
                      * 打开相机
                      */
@@ -178,6 +177,7 @@ class PictureListActivity : AppCompatActivity() {
     fun getHeard() {
         heardList.clear()
         object : AsyncTask<Void, Void, List<String>>() {
+            @SuppressLint("Recycle")
             override fun doInBackground(vararg p0: Void?): List<String>? {
                 val data = ArrayList<String>()
                 var firstPath: String?
@@ -186,9 +186,9 @@ class PictureListActivity : AppCompatActivity() {
                 val resolver = this@PictureListActivity.contentResolver
                 val cursor = resolver.query(imageUrl, null, MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?",
                         arrayOf("image/jpeg", "image/png", "image/gif"), MediaStore.Images.Media.DATE_MODIFIED)
-                if (null != cursor && cursor!!.count > 0) {
-                    while (cursor!!.moveToNext()) {
-                        val path = cursor!!.getString(cursor!!
+                if (null != cursor && cursor.count > 0) {
+                    while (cursor.moveToNext()) {
+                        val path = cursor.getString(cursor
                                 .getColumnIndex(MediaStore.Images.Media.DATA))
                         data.add(0, path)
 
@@ -202,11 +202,11 @@ class PictureListActivity : AppCompatActivity() {
                             parentList.add(parentPath)
                             backResult = FileData()
                             val index = parentPath.lastIndexOf("/")
-                            backResult!!.parentName = parentPath.substring(index + 1)
-                            backResult!!.path = parentPath
-                            backResult!!.firstPath = firstPath
+                            backResult.parentName = parentPath.substring(index + 1)
+                            backResult.path = parentPath
+                            backResult.firstPath = firstPath
                         }
-                        val filter = FilenameFilter { dir, filename -> filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".gif") }
+                        val filter = FilenameFilter { _, filename -> filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".gif") }
                         val picSize: Int//此目录下有几张图片
                         try {
                             picSize = parentFile.list(filter).size
@@ -214,7 +214,7 @@ class PictureListActivity : AppCompatActivity() {
                             e.printStackTrace()
                             continue
                         }
-                        backResult!!.count = picSize
+                        backResult.count = picSize
                         this@PictureListActivity.heardList.add(backResult)
                     }
                 }
@@ -235,7 +235,7 @@ class PictureListActivity : AppCompatActivity() {
                 heardList.add(0, filePath)
                 heardAdapter?.notifyDataSetChanged()
                 data.add("相机")
-                data.addAll(result!!)
+                data.addAll(result)
                 adapter?.notifyDataSetChanged()
             }
         }.execute()
@@ -251,15 +251,14 @@ class PictureListActivity : AppCompatActivity() {
                     return null
                 }
                 val fileter = FilenameFilter { _, s -> s.endsWith(".gif") || s.endsWith("jpeg") || s.endsWith(".png") || s.endsWith(".jpg") }
-                val list = file.list(fileter)
-                return list
+                return file.list(fileter)
             }
 
             override fun onPostExecute(result: Array<String>?) {
                 super.onPostExecute(result)
                 if (result == null)
                     return
-                for (suffix in result!!) {
+                for (suffix in result) {
                     data.add("$path/$suffix")
                 }
                 adapter?.notifyDataSetChanged()
@@ -268,19 +267,12 @@ class PictureListActivity : AppCompatActivity() {
 
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_PRECODE) {
                 data?.let {
-                    val resultData = data.getSerializableExtra("select") as ArrayList<String>
+                    val resultData = data.getSerializableExtra("select") as ArrayList<*>
                     setResult(Activity.RESULT_OK, Intent().putExtra("result", resultData))
                     finish()
                 }
