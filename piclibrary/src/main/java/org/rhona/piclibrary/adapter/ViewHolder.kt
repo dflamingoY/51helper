@@ -1,4 +1,4 @@
-package org.rhona.wallper.adapter
+package org.rhona.piclibrary.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.util.SparseArray
@@ -9,7 +9,7 @@ import android.widget.TextView
 /**
  * Created by yzm on 2018/1/29.
  */
-class ViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
+class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     var views = SparseArray<View>()
 

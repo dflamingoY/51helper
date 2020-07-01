@@ -19,13 +19,10 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 
 import org.rhona.piclibrary.PictureListActivity;
-import org.rhona.wallper.adapter.BaseQuickAdapter;
-import org.rhona.wallper.adapter.ViewHolder;
+import org.rhona.piclibrary.adapter.BaseQuickAdapter;
+import org.rhona.piclibrary.adapter.ViewHolder;
 
-import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION = 0x0000;
@@ -90,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
             mData.addAll(result);
             mAdapter.notifyDataSetChanged();
         }
+
+        //https://raw.githubusercontent.com/593361260/51helper
 
     }
 }

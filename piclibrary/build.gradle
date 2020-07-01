@@ -1,18 +1,17 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'//kapt3插件
+apply plugin: 'maven'
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_8
             targetCompatibility JavaVersion.VERSION_1_8
@@ -25,18 +24,26 @@ android {
         }
     }
 }
-
+uploadArchives {
+    repositories.mavenDeployer {
+        def mavenDirPath = file('C:\\Users\\Ming\\Desktop\\apk\\mavendir')
+        // 本地存放目录(自行选择)，可放在gradle.properties文件中引用
+        repository(url: "file://${mavenDirPath.absolutePath}") // 必须双引号，单引号不会转义$
+        pom.project {
+            groupId "org.rhona.piclibrary" // 可以随意取，一般取包名
+            artifactId "picLibrary" // 可以随意取，一般取库的名字
+            version "1.0.0" // 版本号
+        }
+    }
+}
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     //noinspection GradleCompatible
-    compile 'com.android.support:appcompat-v7:27.1.1'
-    testImplementation 'junit:junit:4.12'
-//    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-//    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    compile 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'com.android.support:cardview-v7:27.1.1'
-    implementation 'androidx.core:core-ktx:0.1'
-    compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
+    api 'com.android.support:appcompat-v7:28.0.0'
+    api 'com.android.support:recyclerview-v7:28.0.0'
+    implementation 'com.android.support:cardview-v7:28.0.0'
+    implementation 'androidx.core:core-ktx:1.1.0'
+    api 'com.github.bumptech.glide:glide:4.0.0-RC1'
     kapt 'com.github.bumptech.glide:compiler:4.0.0-RC1'
-    compile 'com.nineoldandroids:library:2.4.0'
+    api 'com.nineoldandroids:library:2.4.0'
 }
